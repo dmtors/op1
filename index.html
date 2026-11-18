@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OP-1</title>
+    <meta name="description" content="A pocket synth played by Wikipedia articles." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <div class="frame">
+        <div class="op1">
+          <!-- The 17 × 6 grid of keys, knobs and screen; app.js fills it in. -->
+          <div class="op1__panel" id="panel">
+            <div class="op1__cell" style="grid-area: 1 / 1 / 3 / 3" aria-hidden="true"></div>
+            <div class="op1__cell op1__cell--volume" style="grid-area: 1 / 3 / 2 / 5">
+              <button
+                class="op1__volume"
+                id="volume"
+                type="button"
+                role="slider"
+                aria-label="Volume"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <span class="op1__volume-dot"></span>
+              </button>
+            </div>
+            <div class="op1__display" style="grid-area: 1 / 5 / 3 / 9">
+              <canvas id="screen" class="op1__canvas" width="320" height="160"></canvas>
+            </div>
+          </div>
+          <div class="op1__side" aria-hidden="true">
+            <div class="op1__dots"><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="op1__brand">OP-1</div>
+          </div>
+        </div>
+
+        <p class="hint">
+          Play with <kbd>A</kbd>–<kbd>'</kbd> · octave <kbd>Z</kbd>/<kbd>X</kbd> · modes <kbd>1</kbd>–<kbd>4</kbd> ·
+          <kbd>Space</kbd> play · drag or scroll the knobs
+        </p>
+        <ul class="credits" id="credits" aria-live="polite"></ul>
+      </div>
+    </main>
+  </body>
+</html>

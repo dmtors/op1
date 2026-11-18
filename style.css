@@ -1,0 +1,329 @@
+/* OP-1: a pocket synth played by Wikipedia articles. One key unit (--u)
+   sizes everything on the device, so it keeps its proportions at any width. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: #f8f9fa;
+  color: #202122;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 48px 16px;
+  box-sizing: border-box;
+  background: #f8f9fa;
+}
+
+.frame {
+  width: min(1200px, 100%);
+  container-type: inline-size;
+}
+
+/* One key unit drives every size, so the device keeps its proportions. */
+.op1 {
+  --u: calc(100cqw / 18.85);
+  --gap: calc(var(--u) * 0.055);
+  --body: #e9e9ed;
+  --cell: #e1e1e6;
+  --button: #e7e7eb;
+  --ink: #1a1a1c;
+
+  display: flex;
+  padding: calc(var(--u) * 0.3) 0 calc(var(--u) * 0.3) calc(var(--u) * 0.3);
+  border-radius: calc(var(--u) * 0.36);
+  background: var(--body);
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 0.025) #d3d3d8,
+    inset 0 calc(var(--u) * 0.03) 0 rgba(255, 255, 255, 0.9),
+    0 calc(var(--u) * 0.3) calc(var(--u) * 0.7) rgba(0, 0, 0, 0.12);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.op1__panel {
+  flex: none;
+  width: calc(var(--u) * 17);
+  display: grid;
+  grid-template-columns: repeat(17, 1fr);
+  grid-template-rows: repeat(6, calc((var(--u) * 17 - var(--gap) * 18) / 17));
+  gap: var(--gap);
+  padding: var(--gap);
+  box-sizing: border-box;
+  border-radius: calc(var(--u) * 0.07);
+  background: var(--ink);
+}
+
+.op1__cell {
+  position: relative;
+  min-width: 0;
+  background: var(--cell);
+  border-radius: calc(var(--u) * 0.035);
+}
+
+/* ---------------- Buttons ---------------- */
+
+.op1__key {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.op1__button,
+.op1__pill {
+  display: block;
+  background: linear-gradient(180deg, #ececf0, var(--button));
+  box-shadow:
+    0 calc(var(--u) * 0.035) calc(var(--u) * 0.06) rgba(0, 0, 0, 0.16),
+    0 calc(var(--u) * 0.008) calc(var(--u) * 0.015) rgba(0, 0, 0, 0.12),
+    inset 0 calc(var(--u) * 0.012) 0 rgba(255, 255, 255, 0.85);
+  transition: box-shadow 60ms ease, transform 60ms ease;
+}
+.op1__button {
+  width: 68%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+.op1__pill {
+  width: 66%;
+  height: 86%;
+  border-radius: calc(var(--u) * 0.5);
+}
+.op1__key.is-down .op1__button,
+.op1__key.is-down .op1__pill {
+  transform: scale(0.97);
+  background: linear-gradient(180deg, #dcdce1, #e4e4e8);
+  box-shadow:
+    inset 0 calc(var(--u) * 0.02) calc(var(--u) * 0.05) rgba(0, 0, 0, 0.14),
+    0 0 0 rgba(0, 0, 0, 0);
+}
+
+/* ---------------- Volume ---------------- */
+
+.op1__cell--volume {
+  display: flex;
+  align-items: center;
+  padding-left: calc(var(--u) * 0.15);
+}
+.op1__volume {
+  position: relative;
+  width: calc(var(--u) * 0.66);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: ns-resize;
+  background: radial-gradient(circle at 45% 35%, #ffffff, #f4f4f6 70%);
+  box-shadow:
+    0 calc(var(--u) * 0.03) calc(var(--u) * 0.07) rgba(0, 0, 0, 0.18),
+    inset 0 calc(var(--u) * -0.015) calc(var(--u) * 0.03) rgba(0, 0, 0, 0.06);
+}
+.op1__volume-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  width: 11%;
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: #d4d4d9;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------------- Display ---------------- */
+
+.op1__display {
+  display: grid;
+  place-items: center;
+  padding: calc(var(--u) * 0.12) calc(var(--u) * 0.1);
+  margin: calc(var(--gap) * -1) 0;
+  background: #000;
+}
+.op1__canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+/* The synth screen is 8-bit: scale its pixels up without smoothing. Only
+   where the screen has more device pixels than the canvas (2× displays):
+   shrunk without smoothing, whole rows of pixels would drop out. */
+@media (min-resolution: 2dppx) {
+  .op1__canvas--pixels {
+    image-rendering: pixelated;
+  }
+}
+
+/* ---------------- Knobs ---------------- */
+
+.op1__cell--knob {
+  display: grid;
+  place-items: center;
+}
+.op1__knob {
+  position: relative;
+  width: 60%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: calc(var(--u) * 0.03) solid #55555c;
+  border-radius: 50%;
+  cursor: ns-resize;
+  background: var(--cell);
+  box-shadow:
+    0 calc(var(--u) * 0.02) calc(var(--u) * 0.05) rgba(0, 0, 0, 0.12),
+    inset 0 calc(var(--u) * 0.02) calc(var(--u) * 0.05) rgba(0, 0, 0, 0.08);
+}
+.op1__knob-cap {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 30%, var(--hi), var(--knob) 65%);
+  box-shadow:
+    0 calc(var(--u) * 0.035) calc(var(--u) * 0.06) rgba(0, 0, 0, 0.22),
+    inset 0 calc(var(--u) * -0.02) calc(var(--u) * 0.04) rgba(0, 0, 0, 0.1);
+  transition: transform 40ms linear;
+}
+.op1__knob-slot {
+  position: absolute;
+  left: 50%;
+  top: 14%;
+  width: 18%;
+  height: 72%;
+  translate: -50% 0;
+  border-radius: 99px;
+  background: var(--slot);
+  box-shadow: inset 0 calc(var(--u) * 0.01) calc(var(--u) * 0.02) rgba(0, 0, 0, 0.15);
+}
+.op1__knob--blue { --knob: #3fa6ef; --hi: #6cc0ff; --slot: #2d8fd8; }
+.op1__knob--green { --knob: #10c070; --hi: #3fe095; --slot: #0aa65f; }
+.op1__knob--white { --knob: #f3f3f5; --hi: #ffffff; --slot: #e1e1e5; }
+.op1__knob--orange { --knob: #ff6a1f; --hi: #ff8c4a; --slot: #ec5a12; }
+
+/* ---------------- Black keys ---------------- */
+
+.op1__blacks {
+  position: relative;
+}
+.op1__seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.op1__black {
+  position: absolute;
+  top: 50%;
+  width: calc(var(--u) * 0.6);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background: radial-gradient(circle at 45% 35%, #2a2a2d, #0c0c0d 70%);
+  box-shadow:
+    0 calc(var(--u) * 0.04) calc(var(--u) * 0.07) rgba(0, 0, 0, 0.3),
+    inset 0 calc(var(--u) * 0.012) 0 rgba(255, 255, 255, 0.08);
+  transition: transform 60ms ease, box-shadow 60ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.op1__black.is-down {
+  transform: scale(0.95);
+  box-shadow: 0 calc(var(--u) * 0.01) calc(var(--u) * 0.02) rgba(0, 0, 0, 0.3);
+}
+
+/* ---------------- Side strip ---------------- */
+
+.op1__side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--u) * 2.05) 0 calc(var(--u) * 0.5);
+}
+.op1__dots {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 0.12);
+}
+.op1__dots span {
+  width: calc(var(--u) * 0.065);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #3a3a3e;
+}
+.op1__brand {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  font: 400 calc(var(--u) * 0.36) / 1 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  letter-spacing: 0.02em;
+  color: #a6a6ae;
+}
+
+.op1__key:focus-visible,
+.op1__black:focus-visible,
+.op1__knob:focus-visible,
+.op1__volume:focus-visible {
+  outline: 2px solid #3fa6ef;
+  outline-offset: -2px;
+}
+
+.hint {
+  margin: 40px 0 0;
+  text-align: center;
+  color: #54595d;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.credits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+.credits li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.credits__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--knob);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.credits__slot {
+  color: #54595d;
+  text-transform: capitalize;
+}
+.credits a {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  color: #36c;
+}
+.hint kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.35em;
+  border-radius: 4px;
+  border: 1px solid #a2a9b1;
+  background: #fff;
+  font: 12px/1.5 ui-monospace, Menlo, monospace;
+}
